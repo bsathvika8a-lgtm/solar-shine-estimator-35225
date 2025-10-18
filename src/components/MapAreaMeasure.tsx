@@ -76,6 +76,13 @@ const MapAreaMeasure = ({ latitude, longitude, onAreaChange, onLocationChange }:
         return area;
       };
 
+      // Estimate solar potential based on area
+      const estimateSolarPotential = (area: number) => {
+        if (area < 200) return { color: "#ef4444", label: "No potential" };
+        if (area < 800) return { color: "#eab308", label: "Medium potential" };
+        return { color: "#22c55e", label: "High potential" };
+      };
+
       // Handle polygon creation
       map.on(L.Draw.Event.CREATED, (event: any) => {
         const layer = event.layer;
@@ -88,6 +95,23 @@ const MapAreaMeasure = ({ latitude, longitude, onAreaChange, onLocationChange }:
         const roundedArea = Math.round(area);
         setCurrentArea(roundedArea);
         onAreaChange(roundedArea);
+
+        // Apply color based on solar potential
+        const potential = estimateSolarPotential(roundedArea);
+        layer.setStyle({ 
+          color: potential.color, 
+          fillColor: potential.color,
+          fillOpacity: 0.3,
+          weight: 3
+        });
+        
+        // Add popup with potential information
+        layer.bindPopup(`
+          <div class="text-center">
+            <p class="font-semibold text-lg">${potential.label}</p>
+            <p class="text-sm text-gray-600">Area: ${roundedArea.toLocaleString()} m²</p>
+          </div>
+        `).openPopup();
 
         // Update location to center of drawn polygon
         const center = layer.getBounds().getCenter();
@@ -103,6 +127,23 @@ const MapAreaMeasure = ({ latitude, longitude, onAreaChange, onLocationChange }:
           const roundedArea = Math.round(area);
           setCurrentArea(roundedArea);
           onAreaChange(roundedArea);
+
+          // Update color based on new solar potential
+          const potential = estimateSolarPotential(roundedArea);
+          layer.setStyle({ 
+            color: potential.color, 
+            fillColor: potential.color,
+            fillOpacity: 0.3,
+            weight: 3
+          });
+          
+          // Update popup
+          layer.setPopupContent(`
+            <div class="text-center">
+              <p class="font-semibold text-lg">${potential.label}</p>
+              <p class="text-sm text-gray-600">Area: ${roundedArea.toLocaleString()} m²</p>
+            </div>
+          `);
 
           const center = layer.getBounds().getCenter();
           onLocationChange(center.lat, center.lng);
@@ -162,7 +203,7 @@ const MapAreaMeasure = ({ latitude, longitude, onAreaChange, onLocationChange }:
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Click the <strong>polygon</strong> (⬠) or <strong>rectangle</strong> (▭) icon on the map to start drawing. Click points to create a shape, then double-click to finish.
+            Click the <strong>polygon</strong> (⬠) or <strong>rectangle</strong> (▭) icon on the map to start drawing. Areas will be colored: 🟢 Green (high potential ≥800m²), 🟡 Yellow (medium 200-800m²), 🔴 Red (no potential &lt;200m²).
           </AlertDescription>
         </Alert>
 
