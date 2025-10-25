@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Zap, DollarSign, Leaf, Clock, TrendingUp, Battery } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import MetricCard from "./MetricCard";
+import { formatCapacity, formatEnergy, formatPower, formatCurrency, formatCO2 } from "@/lib/formatters";
+import { Separator } from "./ui/separator";
 
 interface ResultsDisplayProps {
   results: {
@@ -15,110 +18,136 @@ interface ResultsDisplayProps {
 }
 
 const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
+  const capacity = formatCapacity(results.systemCapacity);
+  const energy = formatEnergy(results.energyOutput);
+  const power = formatPower(results.peakPower);
+  const co2 = formatCO2(results.co2Reduction);
+
   const monthlyData = [
-    { month: "Jan", energy: results.energyOutput * 0.07 },
-    { month: "Feb", energy: results.energyOutput * 0.08 },
-    { month: "Mar", energy: results.energyOutput * 0.09 },
-    { month: "Apr", energy: results.energyOutput * 0.10 },
-    { month: "May", energy: results.energyOutput * 0.11 },
-    { month: "Jun", energy: results.energyOutput * 0.10 },
-    { month: "Jul", energy: results.energyOutput * 0.09 },
-    { month: "Aug", energy: results.energyOutput * 0.08 },
-    { month: "Sep", energy: results.energyOutput * 0.08 },
-    { month: "Oct", energy: results.energyOutput * 0.08 },
-    { month: "Nov", energy: results.energyOutput * 0.07 },
-    { month: "Dec", energy: results.energyOutput * 0.07 },
+    { month: "Jan", energy: Math.round(results.energyOutput * 0.07) },
+    { month: "Feb", energy: Math.round(results.energyOutput * 0.08) },
+    { month: "Mar", energy: Math.round(results.energyOutput * 0.09) },
+    { month: "Apr", energy: Math.round(results.energyOutput * 0.10) },
+    { month: "May", energy: Math.round(results.energyOutput * 0.11) },
+    { month: "Jun", energy: Math.round(results.energyOutput * 0.10) },
+    { month: "Jul", energy: Math.round(results.energyOutput * 0.09) },
+    { month: "Aug", energy: Math.round(results.energyOutput * 0.08) },
+    { month: "Sep", energy: Math.round(results.energyOutput * 0.08) },
+    { month: "Oct", energy: Math.round(results.energyOutput * 0.08) },
+    { month: "Nov", energy: Math.round(results.energyOutput * 0.07) },
+    { month: "Dec", energy: Math.round(results.energyOutput * 0.07) },
   ];
 
   const savingsData = [
-    { name: "Grid Cost", value: results.savings * 1.5 },
     { name: "Solar Savings", value: results.savings },
+    { name: "Grid Cost", value: results.savings * 1.5 },
   ];
 
-  const COLORS = ["hsl(var(--muted))", "hsl(var(--chart-1))"];
+  const COLORS = ["hsl(var(--chart-1))", "hsl(var(--muted))"];
+
+  const totalSavings = results.savings;
+  const savingsPercentage = ((results.savings / (results.savings * 2.5)) * 100).toFixed(0);
 
   return (
-    <div className="space-y-6">
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="shadow-card hover:shadow-glow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">System Capacity</CardTitle>
-            <Battery className="w-4 h-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold gradient-solar bg-clip-text text-transparent">
-              {results.systemCapacity.toFixed(2)}
+    <div className="space-y-8">
+      {/* Summary Banner */}
+      <Card className="shadow-glow border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <div className="text-4xl">☀️</div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Solar Potential Summary</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Your selected area can produce <span className="font-bold text-chart-1">{energy.lakh || `${energy.value} ${energy.unit}`}</span> annually, 
+                save <span className="font-bold text-chart-2">{formatCurrency(totalSavings)}</span> per year, 
+                and offset <span className="font-bold text-chart-3">{co2.value} {co2.unit}</span> of CO₂ emissions.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">kWp installed</p>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card className="shadow-card hover:shadow-glow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Peak Power</CardTitle>
-            <Zap className="w-4 h-4 text-chart-1" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-chart-1">
-              {results.peakPower.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Wp peak output</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card hover:shadow-glow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Energy Output</CardTitle>
-            <TrendingUp className="w-4 h-4 text-chart-1" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-chart-1">
-              {results.energyOutput.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">kWh per year</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card hover:shadow-glow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Annual Revenue</CardTitle>
-            <DollarSign className="w-4 h-4 text-chart-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-chart-2">
-              ${results.annualRevenue.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">estimated per year</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card hover:shadow-glow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">CO₂ Offset</CardTitle>
-            <Leaf className="w-4 h-4 text-chart-3" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-chart-3">
-              {results.co2Reduction.toFixed(1)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">metric tons/year</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card hover:shadow-glow transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">ROI Period</CardTitle>
-            <Clock className="w-4 h-4 text-chart-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-chart-4">
-              {results.paybackPeriod.toFixed(1)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">years payback</p>
-          </CardContent>
-        </Card>
+      {/* Performance Metrics */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-semibold">⚡ Performance Metrics</h3>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricCard
+            title="System Capacity"
+            value={capacity.value}
+            unit={capacity.unit}
+            subtitle="Total installed solar power"
+            icon={Battery}
+            iconColor="text-primary"
+            tooltip="The maximum power output your solar system can generate under optimal conditions."
+          />
+          
+          <MetricCard
+            title="Peak Power"
+            value={power.value}
+            unit={power.unit}
+            subtitle="Maximum output capacity"
+            icon={Zap}
+            iconColor="text-chart-1"
+            tooltip="The peak wattage your system can produce during ideal sunlight conditions."
+          />
+          
+          <MetricCard
+            title="Annual Energy Output"
+            value={energy.value}
+            unit={energy.unit}
+            subtitle={energy.lakh ? `${energy.lakh} per year` : "Energy generated per year"}
+            icon={TrendingUp}
+            iconColor="text-chart-1"
+            tooltip="Total electrical energy your solar system will generate over one year based on location and conditions."
+          />
+        </div>
       </div>
 
+      <Separator />
+
+      {/* Financial & Impact Metrics */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-semibold">💰 Financial & Environmental Impact</h3>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricCard
+            title="Annual Revenue"
+            value={formatCurrency(results.annualRevenue).replace('$', '')}
+            unit="USD"
+            subtitle="Estimated yearly earnings"
+            icon={DollarSign}
+            iconColor="text-chart-2"
+            tooltip="Expected annual revenue from energy generation based on current electricity rates."
+          />
+          
+          <MetricCard
+            title="ROI Period"
+            value={results.paybackPeriod.toFixed(1)}
+            unit="years"
+            subtitle="Time to recover investment"
+            icon={Clock}
+            iconColor="text-chart-4"
+            tooltip="The time it will take to recover your initial installation cost through energy savings and revenue."
+          />
+          
+          <MetricCard
+            title="CO₂ Offset"
+            value={co2.value}
+            unit={`${co2.unit}/year`}
+            subtitle="Annual emissions reduction"
+            icon={Leaf}
+            iconColor="text-chart-3"
+            tooltip="The amount of carbon dioxide emissions prevented by using solar energy instead of grid electricity."
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Charts */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-card">
           <CardHeader>
@@ -128,16 +157,28 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fontSize: 12 }}
+                />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "var(--radius)"
                   }}
+                  formatter={(value: number) => [`${value.toLocaleString()} kWh`, "Energy"]}
                 />
-                <Bar dataKey="energy" fill="hsl(var(--chart-1))" radius={[8, 8, 0, 0]} />
+                <Bar 
+                  dataKey="energy" 
+                  fill="hsl(var(--chart-1))" 
+                  radius={[8, 8, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -145,18 +186,18 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
 
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle>Revenue vs Grid Cost</CardTitle>
+            <CardTitle>Annual Savings Breakdown</CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="space-y-4">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={savingsData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={90}
                   fill="hsl(var(--chart-1))"
                   dataKey="value"
                 >
@@ -170,9 +211,15 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "var(--radius)"
                   }}
+                  formatter={(value: number) => formatCurrency(value)}
                 />
               </PieChart>
             </ResponsiveContainer>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">You save</p>
+              <p className="text-2xl font-bold text-chart-2">{formatCurrency(totalSavings)}</p>
+              <p className="text-xs text-muted-foreground">annually from solar energy</p>
+            </div>
           </CardContent>
         </Card>
       </div>

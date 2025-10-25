@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      solar_scenarios: {
+        Row: {
+          annual_revenue: number
+          area: number
+          co2_reduction: number
+          created_at: string
+          energy_output: number
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          peak_power: number
+          project_type: string
+          roi_period: number
+          system_capacity: number
+        }
+        Insert: {
+          annual_revenue: number
+          area: number
+          co2_reduction: number
+          created_at?: string
+          energy_output: number
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          peak_power: number
+          project_type: string
+          roi_period: number
+          system_capacity: number
+        }
+        Update: {
+          annual_revenue?: number
+          area?: number
+          co2_reduction?: number
+          created_at?: string
+          energy_output?: number
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          peak_power?: number
+          project_type?: string
+          roi_period?: number
+          system_capacity?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

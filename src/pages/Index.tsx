@@ -3,7 +3,9 @@ import Hero from "@/components/Hero";
 import CalculatorForm from "@/components/CalculatorForm";
 import ResultsDisplay from "@/components/ResultsDisplay";
 import MapAreaMeasure from "@/components/MapAreaMeasure";
+import CompareScenarios from "@/components/CompareScenarios";
 import { Sun } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const calculatorRef = useRef<HTMLDivElement>(null);
@@ -141,7 +143,19 @@ const Index = () => {
               onAreaChange={handleAreaChange}
               onLocationChange={handleLocationChange}
             />
-            <ResultsDisplay results={results} />
+            
+            <Tabs defaultValue="results" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="results">Analysis Results</TabsTrigger>
+                <TabsTrigger value="compare">Compare Scenarios</TabsTrigger>
+              </TabsList>
+              <TabsContent value="results" className="mt-6">
+                <ResultsDisplay results={results} />
+              </TabsContent>
+              <TabsContent value="compare" className="mt-6">
+                <CompareScenarios currentResults={results} formData={formData} />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
